@@ -108,7 +108,7 @@ ol.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;g
   repeating-linear-gradient(92deg,rgba(0,0,0,.08) 0 3px,transparent 3px 9px),
   linear-gradient(100deg,#4E8A45 0%,#2F7A5A 30%,#5A8F3A 55%,#2C6E52 80%,#4F8646 100%)}
 .tz{margin-top:14px;background:var(--ink);color:var(--sheet);border-radius:12px;padding:16px 18px}
-.tz header{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.tz header{display:flex;justify-content:flex-end;align-items:center;gap:10px}
 .tz h3{font-size:16px}
 .tz pre{white-space:pre-wrap;font:14px/1.6 var(--body);margin:10px 0 0;user-select:text;-webkit-user-select:text}
 .tz .btn{border-color:var(--sheet);color:var(--sheet)}
@@ -159,7 +159,7 @@ const CLICHE_PRICE = 14.5;  // кліше, грн за 1 см²
 const SHEET_FORMATS = ['1000×700','900×640','50×70','64×45','35×50','32×45','64×300','700×333','32×30','35×333'];
 
 /* ====== КОНФІГ КРОКІВ ====== */
-const MAT_BOX_OPTS = ['215 г','235 г','250 г','Крафт'];
+const MAT_BOX_OPTS = ['215 г','235 г','250 г','270 г','300 г','Крафт'];
 const MAT_BAG_OPTS = ['215 г','250 г','Крейдований'];
 const MAT_BOX_HINT = '';
 const MAT_BAG_HINT = `<p>Картон 215 г — стандарт: твердий, міцний, дешевий, жовтуватий відтінок. 250 г щільніший і дорожчий. Крейдований — білий, м'який, дорогий.</p>
@@ -184,6 +184,11 @@ const FORMAT_GROUPS={
   bag:[{label:null,opts:fmtOpts('bag')}]
 };
 const PARTS_OPTS=['2 деталі: кришка + дно','1 деталь (суцільна)'];
+const GLUE_NONE_CATS=['КД Низька','КД Висока','Самозбірна висока','Самозбірна низька','Самозбірна MINI','WOК/Салат'];
+const GLUE_FIXED_CATS=['Пенал'];
+const GLUE_DEFAULT1_CATS=['Лодочка','Коробка із язичками','Дитяче Меню','Кебаб','Інші'];
+const OTHER_CAT='Своя категорія';
+const CAT_PARTS={'КД Низька':2,'КД Висока':2,'Пенал':2};
 const partsOf=v=>v.parts===PARTS_OPTS[1]?1:2;
 
 const LAM_OUT = {'Матова':'матова','Глянцева':'глянцева','Софт-тач':'софт-тач','Металізована: срібло':'срібна','Металізована: золото':'золота','Кольорова (інша)':'кольорова'};
@@ -226,12 +231,24 @@ const PRINT_FIELDS_2=[...printFields('Lid','Кришка'),...printFields('Bot',
 const STEPS = [
   {id:'construct', br:['box'], title:'Конструктив',
    hint:v=>isOther(v)
-     ?'<p>Вкажи розмір і конструкцію (1 чи 2 деталі) вручну.</p>'
-     :'<p>Обери ніж зі списку (дані з бота, згруповані по категоріях). Формат підтягнеться в ТЗ сам.</p>',
-   fields:v=>[{k:'manual',label:'Інше — вказати розмір вручну',type:'checkbox'},
-           {k:'fmt',label:'Ніж / формат з бази',type:'select',opts:fmtOpts('box'),groups:FORMAT_GROUPS.box,show:v=>!v.manual},
-           {k:'parts',label:'Конструкція',type:'select',opts:PARTS_OPTS,show:v=>!!v.manual},
-           {k:'dims',label:'Розмір Д×Ш×В, мм',type:'text',ph:'200×100×50'}]},
+     ?'<p>Обери категорію — вона визначить, чи ніж на 1 деталь, чи на 2 (кришка + дно). Немає підходящої — «Своя категорія»: вкажи назву й конструкцію сам.</p>'
+     :'<p>Обери категорію, потім розмір ножа зі списку. Формат підтягнеться в ТЗ сам.</p>',
+   fields:v=>{
+     const f=[{k:'manual',label:'Інше — вказати розмір вручну',type:'checkbox'}];
+     if(!v.cat) v.cat=FORMAT_CATS[0].cat;
+     f.push({k:'cat',label:'Категорія',type:'chips',opts:v.manual?[...FORMAT_CATS.map(g=>g.cat),OTHER_CAT]:FORMAT_CATS.map(g=>g.cat)});
+     if(!v.manual){
+       const items=(FORMAT_CATS.find(g=>g.cat===v.cat)||{items:[]}).items;
+       f.push({k:'fmt',label:'Розмір / ніж',type:'select',opts:items.map(i=>i.name)});
+     }else if(v.cat===OTHER_CAT){
+       f.push({k:'catCustom',label:'Назва категорії',type:'text',ph:'напр. Тубус'});
+       f.push({k:'parts',label:'Конструкція',type:'select',opts:PARTS_OPTS});
+     }else{
+       v.parts=CAT_PARTS[v.cat]===2?PARTS_OPTS[0]:PARTS_OPTS[1];
+     }
+     f.push({k:'dims',label:'Розмір Д×Ш×В, мм',type:'text',ph:'200×100×50'});
+     return f;
+   }},
   {id:'construct', br:['bag'], title:'Розмір пакета',
    hint:v=>isOther(v)?'<p>Вкажи розмір вручну.</p>':'<p>Обери ніж зі списку. Формат підтягнеться в ТЗ сам.</p>',
    fields:v=>[{k:'manual',label:'Інше — вказати розмір вручну',type:'checkbox'},
@@ -253,12 +270,10 @@ const STEPS = [
    fields:v=>partsOf(v)===2?PRINT_FIELDS_2:PRINT_FIELDS_1},
   {id:'print', br:['bag'], title:'Друк', hint:PRINT_HINT, extra:PRINT_EXTRA, fields:PRINT_FIELDS_1},
   {id:'lam', br:['box'], title:'Ламінація',
-   hint:v=>partsOf(v)===2
-     ?'<p>Матова і глянцева — одна ціна. Є ще срібло, золото, інші кольори та софт-тач. Кришку і дно вказуємо окремо: обробка може відрізнятись.</p>'
-     :'<p>Матова і глянцева — одна ціна. Є ще срібло, золото, інші кольори та софт-тач. Обов\'язково вказуємо сторони.</p>',
+   hint:'<p>Глянцева й матова коштують однаково. Усі інші види (срібло, золото, кольорова, софт-тач) — дорожчі.</p>',
    fields:v=>partsOf(v)===2?LAM_FIELDS_2:LAM_FIELDS_1},
   {id:'lam', br:['bag'], title:'Ламінація',
-   hint:'<p>Матова і глянцева — одна ціна. Є ще срібло, золото, інші кольори та софт-тач. За замовчуванням матова зовнішня — це найпоширеніший варіант.</p>',
+   hint:'<p>Глянцева й матова коштують однаково. Усі інші види (срібло, золото, кольорова, софт-тач) — дорожчі. За замовчуванням матова зовнішня — це найпоширеніший варіант.</p>',
    fields:LAM_FIELDS_BAG},
   {id:'emb', br:['box'], title:'Тиснення',
    hint:v=>`<p>Сліпе або плівками (срібло, золото тощо). Вказуємо розмір вручну.${partsOf(v)===2?' На двочастинному ножі — окремо для кришки і дна.':''} Для тиснення робиться кліше: ${String(CLICHE_PRICE).replace('.',',')} грн за 1 см².</p>`,
@@ -271,10 +286,13 @@ const STEPS = [
    fields:EMB_FIELDS_1,
    cliche:v=>[{label:'',emb:v.emb,w:v.embW,h:v.embH}]},
   {id:'glue', br:['box'], title:'Поклейка',
+   hidden:v=>GLUE_NONE_CATS.includes(v.cat)||GLUE_FIXED_CATS.includes(v.cat),
    hint:v=>partsOf(v)===2?'<p>Кількість точок склейки — окремо для кришки й дна.</p>':'<p>Вказуємо кількість точок.</p>',
-   fields:v=>partsOf(v)===2
-     ?[{k:'glueLidPts',label:'Кришка: точок склейки',type:'number',ph:'4'},{k:'glueBotPts',label:'Дно: точок склейки',type:'number',ph:'3'}]
-     :[{k:'gluePts',label:'Точок склейки',type:'number',ph:'4'}]},
+   fields:v=>{
+     if(partsOf(v)===2) return [{k:'glueLidPts',label:'Кришка: точок склейки',type:'number',ph:'4'},{k:'glueBotPts',label:'Дно: точок склейки',type:'number',ph:'3'}];
+     if(v.gluePts==null&&GLUE_DEFAULT1_CATS.includes(v.cat)) v.gluePts='1';
+     return [{k:'gluePts',label:'Точок склейки',type:'number',ph:'4'}];
+   }},
   {id:'glue', br:['bag'], title:'Склейка',
    hint:'<p>Вказуємо з якої сторони: 1 або 2. Для формату 0.5 шт на лист за замовчуванням 2 сторони.</p>',
    fields:v=>{
@@ -335,6 +353,7 @@ const save=()=>{
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmt=n=>Number(n).toLocaleString('uk-UA');
 const stepsFor=br=>STEPS.filter(s=>s.br.includes(br));
+const visibleSteps=(br,v)=>stepsFor(br).filter(s=>!(s.hidden&&s.hidden(v)));
 const fieldsOf=(s,v)=>typeof s.fields==='function'?s.fields(v):s.fields;
 const hintOf=(s,v)=>typeof s.hint==='function'?s.hint(v):s.hint;
 const clicheOf=(s,v)=>typeof s.cliche==='function'?s.cliche(v):s.cliche;
@@ -362,19 +381,21 @@ function fieldHTML(br,f){
 
 function render(br){
   const col=document.querySelector(`.col[data-br="${br}"]`), v=S[br].v;
-  const list=stepsFor(br);
-  // initialise select/checkbox defaults
-  list.forEach(s=>fieldsOf(s,v).forEach(f=>{
+  // initialise select/checkbox defaults across ALL steps (incl. hidden ones) so fields
+  // that later steps' visibility depends on (e.g. v.cat) are set before filtering
+  stepsFor(br).forEach(s=>fieldsOf(s,v).forEach(f=>{
     if((f.type==='select'||f.groups)&&!f.opts.includes(v[f.k])) v[f.k]=f.default!=null?f.default:f.opts[0];
     else if(f.type==='checkbox'&&v[f.k]==null) v[f.k]=f.default??false;
   }));
+  if(!isOther(v)) applyFormat(br);
+  const list=visibleSteps(br,v);
   col.innerHTML=`<div class="colhead"><h2>${br==='box'?'Коробка':'Пакет'}</h2></div>
   <ol class="steps">${list.map((s,i)=>`<li class="step" data-step="${s.id}">
     <div class="stephead"><span class="num">${i+2}</span><h3>${s.title}</h3></div>
     <div class="hint">${hintOf(s,v)}</div>
     <div class="fields">${fieldsOf(s,v).map(f=>fieldHTML(br,f)).join('')}</div>
     ${s.extra||''}<div class="out"></div></li>`).join('')}</ol>
-  <div class="tz"><header><h3>ТЗ: ${br==='box'?'коробка':'пакет'}</h3><button class="btn small" data-copy>Скопіювати ТЗ</button></header><pre></pre></div>`;
+  <div class="tz"><header><button class="btn small" data-copy>Скопіювати ТЗ</button></header><pre></pre></div>`;
   update(br);
 }
 
@@ -387,7 +408,7 @@ function applyFormat(br){
 }
 
 function update(br){
-  const col=document.querySelector(`.col[data-br="${br}"]`), v=S[br].v, list=stepsFor(br);
+  const col=document.querySelector(`.col[data-br="${br}"]`), v=S[br].v, list=visibleSteps(br,v);
   list.forEach(s=>{
     const li=col.querySelector(`[data-step="${s.id}"]`);
     const flds=fieldsOf(s,v);
@@ -479,11 +500,12 @@ function tz(br){
   const v=S[br].v, isBox=br==='box', parts2=isBox&&partsOf(v)===2;
   const L=[], push=(label,val)=>{if(val) L.push(`${label}: ${val}`)};
 
-  L.push(`${isBox?'Коробка':'Пакет'}${v.dims?' '+v.dims:''}`);
+  const headName=(!isOther(v)&&v.fmt)?v.fmt:v.dims;
+  L.push(`${isBox?'Коробка':'Пакет'}${headName?' '+headName:''}`);
   if(S.qty) L.push(`Тираж ${fmt(S.qty)}шт`);
   L.push('');
 
-  function block(label,matK,sheetK,upK,printWhich,lamWhich,embWhich,glueK){
+  function block(label,matK,sheetK,upK,printWhich,lamWhich,embWhich,glueK,fixedGlueAfter){
     push(label,v[matK]);
     push('ФОРМАТ', v[sheetK]&&parseFloat(v[upK])>0?`${v[sheetK]}, ${v[upK]}шт`:'');
     push('ДРУК', printLine(v,printWhich));
@@ -491,19 +513,21 @@ function tz(br){
     push('ТИСНЕННЯ', embLine(v,embWhich));
     if(glueK) push('ПОКЛЕЙКА', parseFloat(v[glueK])>0?`${v[glueK]} ${ptsWord(v[glueK])}`:'');
     L.push('ВИСІЧКА');
+    if(fixedGlueAfter) L.push('ПОКЛЕЙКА');
   }
 
   if(parts2){
-    block('КРИШКА','matLid','sheetLid','upLid','Lid','Lid','Lid','glueLidPts');
+    const noGlue=GLUE_NONE_CATS.includes(v.cat), penal=GLUE_FIXED_CATS.includes(v.cat);
+    block('КРИШКА','matLid','sheetLid','upLid','Lid','Lid','Lid',(noGlue||penal)?null:'glueLidPts',penal);
     L.push('');
-    block('ДНО','matBot','sheetBot','upBot','Bot','Bot','Bot','glueBotPts');
+    block('ДНО','matBot','sheetBot','upBot','Bot','Bot','Bot',(noGlue||penal)?null:'glueBotPts');
   }else{
     block('КАРТОН','mat','sheet',isBox?'up':'upBag','','','');
     if(!isBox){
       const bb=bagBottom(v.dims); push('ДНО', bb?`${bb} + поклейка`:'');
       push('РУЧКИ', handleLine(v));
       push('ПОКЛЕЙКА', v.glueSide||'');
-    }else if(parseFloat(v.gluePts)>0){
+    }else if(!GLUE_NONE_CATS.includes(v.cat)&&parseFloat(v.gluePts)>0){
       L.push(`ПОКЛЕЙКА: ${v.gluePts} ${ptsWord(v.gluePts)}`);
     }
   }
@@ -572,6 +596,7 @@ function bind(){
       if(chipBtn){
         const k=chipBtn.closest('[data-chip]').dataset.chip;
         S[br].v[k]=chipBtn.dataset.v;
+        if(k==='cat'){ S[br].v.fmt=''; save(); render(br); return; }
         save(); update(br);
         return;
       }
