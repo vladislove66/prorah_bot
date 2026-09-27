@@ -33,67 +33,64 @@
 *,*::before,*::after{box-sizing:inherit}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 var(--body);-webkit-font-smoothing:antialiased}
-.wrap{max-width:680px;margin:0 auto;padding:0 20px 60px}
+.wrap{max-width:680px;margin:0 auto;padding:0 20px 80px}
 h1,h2,h3{font-family:var(--display);font-weight:700;margin:0;line-height:1.15}
 button,input,select{font:inherit;color:inherit}
 :focus-visible{outline:3px solid var(--cyan);outline-offset:2px}
 
-/* header: printer's control strip */
 .strip{display:flex;height:14px}
 .strip i{flex:1}
-header.top{padding:34px 0 26px;position:relative}
-.reg{position:absolute;top:26px;right:0;width:34px;height:34px;color:var(--ink);opacity:.55}
-header.top h1{font-size:clamp(28px,5vw,52px);letter-spacing:-.01em;max-width:14ch}
-header.top p{color:var(--muted);margin:12px 0 0;max-width:60ch}
-.toolbar{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+header.top{padding:22px 0 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+header.top h1{font-size:clamp(24px,5vw,34px);letter-spacing:-.01em}
 .btn{border:1.5px solid var(--ink);background:transparent;border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:600}
 .btn:hover{background:var(--ink);color:var(--sheet)}
 .btn.small{padding:5px 10px;font-size:14px}
 
-/* intake */
-.intake{background:var(--sheet);border:1.5px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:22px}
-.intake h2{font-size:18px;display:flex;gap:12px;align-items:center}
+/* branch switch: single control, sticky */
+.switch{display:flex;margin:0 0 18px;border:1.5px solid var(--ink);border-radius:10px;overflow:hidden;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper)}
+.switch button{flex:1;border:0;background:transparent;padding:13px;font-weight:700;font-family:var(--display);font-size:15px;cursor:pointer;color:var(--ink);opacity:.5}
+.switch button[aria-pressed="true"]{opacity:1}
+.switch button.b[aria-pressed="true"]{background:var(--cyan);color:#fff}
+.switch button.p[aria-pressed="true"]{background:var(--magenta);color:#fff}
+
+/* intake: тираж */
+.intake{background:var(--sheet);border:1.5px solid var(--line);border-radius:14px;padding:18px}
+.intake h2{font-size:18px;display:flex;gap:12px;align-items:center;margin-bottom:2px}
 .num{font-family:var(--display);font-size:13px;min-width:28px;height:28px;border-radius:50%;display:inline-grid;place-items:center;border:2px solid currentColor;flex:none}
-.gate{margin-top:10px;padding:10px 12px;border-radius:8px;font-weight:500;display:none}
-.gate.ok{display:block;background:var(--okbg);color:var(--ok)}
-.gate.stop{display:block;background:var(--stopbg);color:var(--magenta)}
-.fork{display:flex;gap:10px;margin-top:10px}
-.sub{color:var(--muted);font-size:14px;margin:6px 0 0}
+.qtyquick{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.qtyquick button{border:1.5px solid var(--line);background:var(--paper);border-radius:20px;padding:7px 14px;font-size:14px;font-weight:600;cursor:pointer}
+.qtyquick button.active{background:var(--ink);color:var(--sheet);border-color:var(--ink)}
 
 /* branches */
-.switch{display:none;margin:22px 0 0;border:1.5px solid var(--ink);border-radius:10px;overflow:hidden;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper)}
-.switch button{flex:1;border:0;background:transparent;padding:10px;font-weight:700;cursor:pointer}
-.switch button[aria-pressed="true"]{background:var(--ink);color:var(--sheet)}
-.cols{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:22px;transition:opacity .2s}
-.cols.blocked{opacity:.35;pointer-events:none}
+.cols{display:grid;grid-template-columns:1fr;gap:22px;margin-top:22px}
+.cols[data-show="box"] .col.bag,.cols[data-show="bag"] .col.box{display:none}
 .col{--acc:var(--cyan)}
 .col.bag{--acc:var(--magenta)}
 .colhead{border-top:6px solid var(--acc);background:var(--sheet);border-radius:0 0 12px 12px;padding:16px 18px;margin-bottom:14px}
 .colhead h2{font-size:22px;color:var(--acc)}
-.bar{height:6px;background:var(--line);border-radius:3px;margin-top:10px;overflow:hidden}
-.bar i{display:block;height:100%;width:0;background:var(--acc);transition:width .25s}
-.prog{font-size:13px;color:var(--muted);margin-top:6px}
 ol.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
-.step{background:var(--sheet);border:1.5px solid var(--line);border-left:5px solid var(--line);border-radius:10px;padding:16px 18px}
-.step.done{border-left-color:var(--acc)}
-.step.done .num{background:var(--acc);border-color:var(--acc);color:#fff}
-.step>header{display:flex;align-items:center;gap:12px}
-.step h3{font-size:16px;flex:1;font-weight:500}
-.step .num{color:var(--acc)}
-.check{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--muted);cursor:pointer;user-select:none}
-.check input{width:18px;height:18px;accent-color:var(--acc)}
+.step{background:var(--sheet);border:1.5px solid var(--line);border-left:5px solid var(--acc);border-radius:10px;padding:16px 18px}
+.stephead{display:flex;align-items:center;gap:12px}
+.stephead h3{font-size:16px;flex:1;font-weight:500}
+.stephead .num{color:var(--acc)}
 .hint{color:var(--muted);font-size:14.5px;margin:10px 0 0}
+.hint:empty{display:none}
 .hint p{margin:0 0 6px} .hint b{color:var(--ink);font-weight:600}
 .fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px;margin-top:12px}
 .fields:empty{display:none}
 .f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+.f.checkbox{flex-direction:row;align-items:center;gap:8px;font-size:15px;color:var(--ink);cursor:pointer}
+.f.checkbox input{width:18px;height:18px;flex:none;accent-color:var(--acc,var(--ink))}
 .f[hidden]{display:none}
 .f input,.f select{border:1.5px solid var(--line);background:var(--paper);border-radius:7px;padding:8px 10px;font-size:15px;width:100%}
+.chiprow{display:flex;flex-wrap:wrap;gap:6px}
+.chiprow button{border:1.5px solid var(--line);background:var(--paper);border-radius:7px;padding:7px 12px;font-size:14px;font-weight:600;cursor:pointer;color:var(--ink)}
+.chiprow button.active{background:var(--acc,var(--ink));color:#fff;border-color:var(--acc,var(--ink))}
 .f input:focus,.f select:focus{border-color:var(--acc);outline:none}
 .note{margin-top:12px;padding:10px 12px;border-radius:8px;font-size:14px}
 .note.warn{background:var(--warnbg)}
 .note.info{background:var(--paper)}
-.mats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.mats{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px}
 .mat{border-radius:8px;padding:10px;font-size:13px;border:1.5px solid var(--line)}
 .mat b{display:block;font-size:14px;margin-bottom:2px}
 .mat .sw{height:22px;border-radius:4px;margin-bottom:8px;border:1px solid var(--line)}
@@ -113,20 +110,9 @@ ol.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;g
 .tz{margin-top:14px;background:var(--ink);color:var(--sheet);border-radius:12px;padding:16px 18px}
 .tz header{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .tz h3{font-size:16px}
-.tz pre{white-space:pre-wrap;font:14px/1.6 var(--body);margin:10px 0 0}
+.tz pre{white-space:pre-wrap;font:14px/1.6 var(--body);margin:10px 0 0;user-select:text;-webkit-user-select:text}
 .tz .btn{border-color:var(--sheet);color:var(--sheet)}
 .tz .btn:hover{background:var(--sheet);color:var(--ink)}
-.intake{grid-template-columns:1fr}
-.switch{display:flex}
-.cols{grid-template-columns:1fr}
-.cols[data-show="box"] .col.bag,.cols[data-show="bag"] .col.box{display:none}
-.mats{grid-template-columns:1fr}
-.fork button{flex:1;border:0;border-radius:10px;padding:12px;font-family:var(--display);font-size:15px;color:#fff;cursor:pointer;opacity:.45}
-.fork button.b{background:var(--cyan)} .fork button.p{background:var(--magenta)}
-.fork button[aria-pressed="true"]{opacity:1}
-header.top{padding:22px 0 16px} .reg{display:none}
-.tz pre{user-select:text;-webkit-user-select:text}
-@media (min-width:700px){.wrap{padding-bottom:80px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -138,30 +124,27 @@ header.top{padding:22px 0 16px} .reg{display:none}
 </div>
 <div class="wrap">
 <header class="top">
-  <svg class="reg" viewBox="0 0 34 34" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="17" cy="17" r="9"/><circle cx="17" cy="17" r="4"/><path d="M17 0v34M0 17h34"/></svg>
   <h1>Прорахунок пакування</h1>
-  <p>Чекліст для менеджера: від першого питання клієнту до готового ТЗ. Заповнюйте поля по ходу розмови. Внизу збирається ТЗ, його можна скопіювати кнопкою «Скопіювати ТЗ».</p>
-  <div class="toolbar"><button class="btn small" id="reset">Очистити все</button></div>
+  <button class="btn small" id="reset">Очистити все</button>
 </header>
 
-<section class="intake" aria-label="Перші питання">
-  <div>
-    <h2><span class="num">1</span>Тираж</h2>
-    <p class="sub">Перше питання. Якщо тираж мікро, далі не рахуємо, щоб не витрачати час.</p>
-    <div class="fields" style="grid-template-columns:1fr"><label class="f">Тираж клієнта, шт<input type="number" id="qty" min="0" inputmode="numeric" placeholder="напр. 5000"></label></div>
-    <div class="gate" id="gate"></div>
-  </div>
-  <div>
-    <h2><span class="num">2</span>Що пакуємо?</h2>
-    <p class="sub">Від відповіді залежить гілка прорахунку.</p>
-    <div class="fork"><button class="b" data-show="box" aria-pressed="true">Коробка</button><button class="p" data-show="bag" aria-pressed="false">Пакет</button></div>
-  </div>
-</section>
-
-<div class="switch" role="group" aria-label="Гілка">
-  <button data-show="box" aria-pressed="true">Коробка</button>
-  <button data-show="bag" aria-pressed="false">Пакет</button>
+<div class="switch" role="group" aria-label="Що пакуємо">
+  <button class="b" data-show="box" aria-pressed="true">Коробка</button>
+  <button class="p" data-show="bag" aria-pressed="false">Пакет</button>
 </div>
+
+<section class="intake" aria-label="Тираж">
+  <h2><span class="num">1</span>Тираж</h2>
+  <div class="qtyquick" id="qtyQuick">
+    <button type="button" data-v="500">500</button><button type="button" data-v="1000">1 000</button>
+    <button type="button" data-v="2000">2 000</button><button type="button" data-v="3000">3 000</button>
+    <button type="button" data-v="4000">4 000</button><button type="button" data-v="5000">5 000</button>
+    <button type="button" data-v="6000">6 000</button><button type="button" data-v="8000">8 000</button>
+    <button type="button" data-v="10000">10 000</button><button type="button" data-v="12000">12 000</button>
+    <button type="button" data-v="15000">15 000</button><button type="button" data-v="20000">20 000</button>
+  </div>
+  <div class="fields" style="grid-template-columns:1fr"><label class="f">Інший тираж, шт<input type="number" id="qty" min="0" inputmode="numeric" placeholder="напр. 5000"></label></div>
+</section>
 
 <div class="cols" id="cols" data-show="box">
   <section class="col box" data-br="box"></section>
@@ -172,86 +155,141 @@ header.top{padding:22px 0 16px} .reg{display:none}
 <script src="formats.js"></script>
 <script>
 /* ====== НАЛАШТУВАННЯ (легко змінити) ====== */
-const MICRO_LIMIT = 1000;   // тираж менше цього = мікро, шт
-const SHEET_STEP  = 1000;   // робота рахується кратно стільком листам
 const CLICHE_PRICE = 14.5;  // кліше, грн за 1 см²
+const SHEET_FORMATS = ['1000×700','900×640','50×70','64×45','35×50','32×45','64×300','700×333','32×30','35×333'];
 
 /* ====== КОНФІГ КРОКІВ ====== */
 const MAT_BOX_OPTS = ['215 г','235 г','250 г','Крафт'];
 const MAT_BAG_OPTS = ['215 г','250 г','Крейдований'];
-const MAT_BOX_HINT = `<p>Картон 215 г — стандарт: твердий, міцний, дешевий, жовтуватий відтінок. Щільніший картон (235, 250 г) міцніший і дорожчий. Крафт — натуральний бурий.</p>`;
+const MAT_BOX_HINT = '';
 const MAT_BAG_HINT = `<p>Картон 215 г — стандарт: твердий, міцний, дешевий, жовтуватий відтінок. 250 г щільніший і дорожчий. Крейдований — білий, м'який, дорогий.</p>
 <div class="note warn"><b>Увага:</b> крейдований картон не порівнюйте з 215 г лише за щільністю: за твердістю він інший.</div>`;
 
-const PRINT_HINT = `<p><b>CMYK</b> — дешево, друкується будь-яке зображення. Але суцільні кольори можуть вийти нерівно.</p>
-<p><b>Пантони</b> — кожен колір замовляється і друкується окремо, тому дорожче. Фони обов'язково робимо пантоном.</p>`;
+const PRINT_HINT = `<p>Друк обираємо окремо зовні та всередині: немає / CMYK / пантони / CMYK + пантони разом, і скільки фарб на цій стороні.</p>
+<p><b>Пантони</b> — кожен колір окремо, дорожче; фони обов'язково пантоном.</p>`;
 const PRINT_EXTRA = `<div class="swatches">
   <figure><div class="box sw-ok"></div><figcaption>Так виглядає в макеті</figcaption></figure>
-  <figure><div class="box sw-bad"></div><figcaption>Так може вийти в CMYK: смуги, нерівний тон (замінити на фото зеленої коробки)</figcaption></figure>
+  <figure><div class="box sw-bad"></div><figcaption>Так може вийти в CMYK: смуги, нерівний тон</figcaption></figure>
 </div>`;
 
 const LAM_OPTS = ['Без ламінації','Матова','Глянцева','Софт-тач','Металізована: срібло','Металізована: золото','Кольорова (інша)'];
-const LAM_SIDES = ['1+0 (зовнішня)','0+1 (внутрішня)','1+1 (двостороння)'];
 const EMB_OPTS = ['Без тиснення','Сліпе','Фольга: срібло','Фольга: золото','Фольга: інший колір'];
+const EMB_OUT = {'Сліпе':'сліпе тиснення','Фольга: срібло':'срібною плівкою','Фольга: золото':'золотою плівкою','Фольга: інший колір':'кольоровою плівкою'};
+const PRINT_SIDE_OPTS = ['Немає','CMYK','Пантони','CMYK + Пантони'];
 
-const OTHER='Інше';
-const fmtOpts=br=>[...(FORMATS[br]||[]).map(f=>f.name),OTHER];
-const isOther=v=>!v.fmt||v.fmt===OTHER;
+const fmtOpts=br=>(FORMATS[br]||[]).map(f=>f.name);
+const isOther=v=>!!v.manual;
+const FORMAT_GROUPS={
+  box:FORMAT_CATS.map(g=>({label:g.cat,opts:g.items.map(i=>i.name)})),
+  bag:[{label:null,opts:fmtOpts('bag')}]
+};
+const PARTS_OPTS=['2 деталі: кришка + дно','1 деталь (суцільна)'];
+const partsOf=v=>v.parts===PARTS_OPTS[1]?1:2;
+
+const LAM_OUT = {'Матова':'матова','Глянцева':'глянцева','Софт-тач':'софт-тач','Металізована: срібло':'срібна','Металізована: золото':'золота','Кольорова (інша)':'кольорова'};
+function lamFields(which,labelPrefix,outDefault){
+  const lp=labelPrefix?labelPrefix+': ':'';
+  const out={k:'lam'+which+'Out',label:lp+'Ламінація зовні',type:'select',opts:LAM_OPTS};
+  if(outDefault) out.default=outDefault;
+  return [out,{k:'lam'+which+'In',label:lp+'Ламінація всередині',type:'select',opts:LAM_OPTS}];
+}
+const LAM_FIELDS_1=lamFields('','');
+const LAM_FIELDS_2=[...lamFields('Lid','Кришка'),...lamFields('Bot','Дно')];
+const LAM_FIELDS_BAG=lamFields('','','Матова');
+const EMB_FIELDS_1=[
+  {k:'emb',label:'Тип',type:'select',opts:EMB_OPTS},
+  {k:'embW',label:'Розмір тиснення: ширина, см',type:'number',ph:'5',show:v=>v.emb&&v.emb!==EMB_OPTS[0]},
+  {k:'embH',label:'Розмір тиснення: висота, см',type:'number',ph:'3',show:v=>v.emb&&v.emb!==EMB_OPTS[0]}];
+const EMB_FIELDS_2=[
+  {k:'embLid',label:'Кришка: тип тиснення',type:'select',opts:EMB_OPTS},
+  {k:'embLidW',label:'Кришка: ширина, см',type:'number',ph:'5',show:v=>v.embLid&&v.embLid!==EMB_OPTS[0]},
+  {k:'embLidH',label:'Кришка: висота, см',type:'number',ph:'3',show:v=>v.embLid&&v.embLid!==EMB_OPTS[0]},
+  {k:'embBot',label:'Дно: тип тиснення',type:'select',opts:EMB_OPTS},
+  {k:'embBotW',label:'Дно: ширина, см',type:'number',ph:'5',show:v=>v.embBot&&v.embBot!==EMB_OPTS[0]},
+  {k:'embBotH',label:'Дно: висота, см',type:'number',ph:'3',show:v=>v.embBot&&v.embBot!==EMB_OPTS[0]}];
+const MAT_FIELDS_1=[{k:'mat',label:'Картон',type:'select',opts:MAT_BOX_OPTS}];
+const MAT_FIELDS_2=[
+  {k:'matLid',label:'Кришка: картон',type:'select',opts:MAT_BOX_OPTS},
+  {k:'matBot',label:'Дно: картон',type:'select',opts:MAT_BOX_OPTS}];
+function printFields(which,labelPrefix){
+  const lp=labelPrefix?labelPrefix+': ':'';
+  const side=(dir,dirLabel)=>[
+    {k:'print'+which+dir,label:lp+'Друк '+dirLabel,type:'select',opts:PRINT_SIDE_OPTS},
+    {k:'print'+which+dir+'CmykN',label:lp+dirLabel+': CMYK фарб',type:'chips',opts:[1,2,3,4],show:v=>{const t=v['print'+which+dir];return t==='CMYK'||t==='CMYK + Пантони'}},
+    {k:'print'+which+dir+'PmsN',label:lp+dirLabel+': пантонів',type:'chips',opts:[1,2,3,4],show:v=>{const t=v['print'+which+dir];return t==='Пантони'||t==='CMYK + Пантони'}}
+  ];
+  return [...side('Out','зовні'),...side('In','всередині')];
+}
+const PRINT_FIELDS_1=printFields('','');
+const PRINT_FIELDS_2=[...printFields('Lid','Кришка'),...printFields('Bot','Дно')];
 
 const STEPS = [
   {id:'construct', br:['box'], title:'Конструктив',
-   hint:'<p>Підбираємо з наявних ножів у боті, далі складаємо ТЗ.</p>',
-   fields:[{k:'fmt',label:'Ніж / формат з бази',type:'select',opts:fmtOpts('box')},
-           {k:'dims',label:'Розмір Д×Ш×В, мм',type:'text',ph:'200×100×50',show:isOther},{k:'knife',label:'Ніж з бота',type:'text',ph:'№ / назва',show:isOther}]},
+   hint:v=>isOther(v)
+     ?'<p>Вкажи розмір і конструкцію (1 чи 2 деталі) вручну.</p>'
+     :'<p>Обери ніж зі списку (дані з бота, згруповані по категоріях). Формат підтягнеться в ТЗ сам.</p>',
+   fields:v=>[{k:'manual',label:'Інше — вказати розмір вручну',type:'checkbox'},
+           {k:'fmt',label:'Ніж / формат з бази',type:'select',opts:fmtOpts('box'),groups:FORMAT_GROUPS.box,show:v=>!v.manual},
+           {k:'parts',label:'Конструкція',type:'select',opts:PARTS_OPTS,show:v=>!!v.manual},
+           {k:'dims',label:'Розмір Д×Ш×В, мм',type:'text',ph:'200×100×50'}]},
   {id:'construct', br:['bag'], title:'Розмір пакета',
-   hint:'<p>Для пакета достатньо розміру. Далі підбираємо з наявних ножів у боті.</p>',
-   fields:[{k:'fmt',label:'Ніж / формат з бази',type:'select',opts:fmtOpts('bag')},
-           {k:'dims',label:'Розмір, мм',type:'text',ph:'Ш×В×Г',show:isOther},{k:'knife',label:'Ніж з бота',type:'text',ph:'№ / назва',show:isOther}]},
+   hint:v=>isOther(v)?'<p>Вкажи розмір вручну.</p>':'<p>Обери ніж зі списку. Формат підтягнеться в ТЗ сам.</p>',
+   fields:v=>[{k:'manual',label:'Інше — вказати розмір вручну',type:'checkbox'},
+           {k:'fmt',label:'Ніж / формат з бази',type:'select',opts:fmtOpts('bag'),groups:FORMAT_GROUPS.bag,show:v=>!v.manual},
+           {k:'dims',label:'Розмір, мм',type:'text',ph:'Ш×В×Г'}]},
   {id:'material', br:['box'], title:'Матеріал', hint:MAT_BOX_HINT,
-   fields:[{k:'mat',label:'Картон',type:'select',opts:MAT_BOX_OPTS}]},
+   fields:v=>partsOf(v)===2?MAT_FIELDS_2:MAT_FIELDS_1},
   {id:'material', br:['bag'], title:'Матеріал', hint:MAT_BAG_HINT,
    fields:[{k:'mat',label:'Картон',type:'select',opts:MAT_BAG_OPTS}]},
-  {id:'layout', br:['box'], title:'Формат і оптимальний тираж',
-   hint:`<p>Формат беремо з бота по наявних ножах. Робота рахується кратно ${SHEET_STEP} листів, тому пропонуємо клієнту тираж, при якому всі деталі виходять на цілі тисячі листів.</p>
-   <p><b>Приклад:</b> коробка 200×100×50. Кришка: 3 шт на лист (мала машина), 6 (велика). Дно: 2 (мала), 4 (велика). Оптимально 6000 шт.</p>`,
-   fields:[{k:'upLid',label:'Кришка, шт на лист',type:'number',ph:'3'},{k:'upBot',label:'Дно, шт на лист',type:'number',ph:'2'}],
-   calc:[['upLid','Кришка'],['upBot','Дно']]},
-  {id:'layout', br:['bag'], title:'Формат і оптимальний тираж',
-   hint:`<p>Формат беремо з бота по наявних ножах. Робота рахується кратно ${SHEET_STEP} листів.</p>`,
-   fields:[{k:'upBag',label:'Пакетів на лист, шт',type:'number',ph:'1'}],
-   calc:[['upBag','Пакет']]},
-  {id:'print', br:['box','bag'], title:'Друк', hint:PRINT_HINT, extra:PRINT_EXTRA,
-   fields:[{k:'print',label:'Тип друку',type:'select',opts:['CMYK','Пантони','CMYK + пантони']},
-           {k:'cmykN',label:'Скільки CMYK-фарб',type:'select',opts:['4','3','2','1'],show:v=>v.print==='CMYK + пантони'},
-           {k:'pms',label:'Кількість пантонів',type:'number',ph:'1',show:v=>/антон/.test(v.print||'')}]},
-  {id:'lam', br:['box','bag'], title:'Ламінація',
-   hint:'<p>Матова і глянцева — одна ціна. Є ще срібло, золото, інші кольори та софт-тач. Обов\'язково вказуємо сторони.</p>',
-   fields:[{k:'lam',label:'Тип',type:'select',opts:LAM_OPTS},
-           {k:'lamSide',label:'Сторони',type:'select',opts:LAM_SIDES,show:v=>v.lam&&v.lam!==LAM_OPTS[0]}]},
-  {id:'emb', br:['box','bag'], title:'Тиснення',
+  {id:'layout', br:['box'], title:'Формат',
+   hint:v=>isOther(v)?'<p>Формат листа і кількість на лист вказуємо вручну — окремо для кожної деталі, якщо їх дві.</p>':'',
+   fields:v=>!isOther(v)?[]:partsOf(v)===2
+     ?[{k:'sheetLid',label:'Кришка: формат листа, см',type:'select',opts:SHEET_FORMATS},{k:'upLid',label:'Кришка, шт на лист',type:'number',ph:'3'},
+       {k:'sheetBot',label:'Дно: формат листа, см',type:'select',opts:SHEET_FORMATS},{k:'upBot',label:'Дно, шт на лист',type:'number',ph:'2'}]
+     :[{k:'sheet',label:'Формат листа, см',type:'select',opts:SHEET_FORMATS},{k:'up',label:'Шт на лист',type:'number',ph:'1'}]},
+  {id:'layout', br:['bag'], title:'Формат', hint:v=>isOther(v)?'<p>Формат листа і кількість пакетів на лист вказуємо вручну.</p>':'',
+   fields:v=>!isOther(v)?[]:[{k:'sheet',label:'Формат листа, см',type:'select',opts:SHEET_FORMATS},{k:'upBag',label:'Пакетів на лист, шт',type:'chips',opts:[0.5,1]}]},
+  {id:'print', br:['box'], title:'Друк', hint:PRINT_HINT, extra:PRINT_EXTRA,
+   fields:v=>partsOf(v)===2?PRINT_FIELDS_2:PRINT_FIELDS_1},
+  {id:'print', br:['bag'], title:'Друк', hint:PRINT_HINT, extra:PRINT_EXTRA, fields:PRINT_FIELDS_1},
+  {id:'lam', br:['box'], title:'Ламінація',
+   hint:v=>partsOf(v)===2
+     ?'<p>Матова і глянцева — одна ціна. Є ще срібло, золото, інші кольори та софт-тач. Кришку і дно вказуємо окремо: обробка може відрізнятись.</p>'
+     :'<p>Матова і глянцева — одна ціна. Є ще срібло, золото, інші кольори та софт-тач. Обов\'язково вказуємо сторони.</p>',
+   fields:v=>partsOf(v)===2?LAM_FIELDS_2:LAM_FIELDS_1},
+  {id:'lam', br:['bag'], title:'Ламінація',
+   hint:'<p>Матова і глянцева — одна ціна. Є ще срібло, золото, інші кольори та софт-тач. За замовчуванням матова зовнішня — це найпоширеніший варіант.</p>',
+   fields:LAM_FIELDS_BAG},
+  {id:'emb', br:['box'], title:'Тиснення',
+   hint:v=>`<p>Сліпе або плівками (срібло, золото тощо). Вказуємо розмір вручну.${partsOf(v)===2?' На двочастинному ножі — окремо для кришки і дна.':''} Для тиснення робиться кліше: ${String(CLICHE_PRICE).replace('.',',')} грн за 1 см².</p>`,
+   fields:v=>partsOf(v)===2?EMB_FIELDS_2:EMB_FIELDS_1,
+   cliche:v=>partsOf(v)===2
+     ?[{label:'кришка',emb:v.embLid,w:v.embLidW,h:v.embLidH},{label:'дно',emb:v.embBot,w:v.embBotW,h:v.embBotH}]
+     :[{label:'',emb:v.emb,w:v.embW,h:v.embH}]},
+  {id:'emb', br:['bag'], title:'Тиснення',
    hint:`<p>Сліпе або плівками (срібло, золото тощо). Вказуємо розмір. Для тиснення робиться кліше: ${String(CLICHE_PRICE).replace('.',',')} грн за 1 см².</p>`,
-   fields:[{k:'emb',label:'Тип',type:'select',opts:EMB_OPTS},
-           {k:'embW',label:'Розмір тиснення: ширина, см',type:'number',ph:'5',show:v=>v.emb&&v.emb!==EMB_OPTS[0]},
-           {k:'embH',label:'Розмір тиснення: висота, см',type:'number',ph:'3',show:v=>v.emb&&v.emb!==EMB_OPTS[0]}],
-   cliche:true},
-  {id:'cut', br:['box','bag'], title:'Висічка',
-   hint:'<p>Без коментарів: усі роботи висікаються. Вказувати нічого не треба.</p>', fields:[]},
+   fields:EMB_FIELDS_1,
+   cliche:v=>[{label:'',emb:v.emb,w:v.embW,h:v.embH}]},
   {id:'glue', br:['box'], title:'Поклейка',
-   hint:'<p>Вказуємо кількість точок.</p>',
-   fields:[{k:'gluePts',label:'Точок склейки',type:'number',ph:'4'}]},
+   hint:v=>partsOf(v)===2?'<p>Кількість точок склейки — окремо для кришки й дна.</p>':'<p>Вказуємо кількість точок.</p>',
+   fields:v=>partsOf(v)===2
+     ?[{k:'glueLidPts',label:'Кришка: точок склейки',type:'number',ph:'4'},{k:'glueBotPts',label:'Дно: точок склейки',type:'number',ph:'3'}]
+     :[{k:'gluePts',label:'Точок склейки',type:'number',ph:'4'}]},
   {id:'glue', br:['bag'], title:'Склейка',
-   hint:'<p>Вказуємо кількість точок і з якої сторони: 1 або 2.</p>',
-   fields:[{k:'gluePts',label:'Точок склейки',type:'number',ph:'2'},
-           {k:'glueSide',label:'Сторони',type:'select',opts:['1 сторона','2 сторони']}]},
+   hint:'<p>Вказуємо з якої сторони: 1 або 2. Для формату 0.5 шт на лист за замовчуванням 2 сторони.</p>',
+   fields:v=>{
+     if(!v.glueSide_touched) v.glueSide=v.upBag==='0.5'?'2 сторони':'1 сторона';
+     return [{k:'glueSide',label:'Сторони',type:'select',opts:['1 сторона','2 сторони']}];
+   }},
   {id:'handle', br:['bag'], title:'Ручки',
    hint:'<p><b>Шнур:</b> кріплення вузлом або затичкою. <b>Стрічка:</b> репс, атлас, кіпр тощо; вклеєна або на вузол. Вказуємо довжину, колір, ширину.</p>',
    fields:[{k:'hType',label:'Тип',type:'select',opts:['Шнур','Стрічка','Без ручок']},
            {k:'cordFix',label:'Кріплення шнура',type:'select',opts:['Вузол','Затичка'],show:v=>(v.hType||'Шнур')==='Шнур'},
            {k:'ribMat',label:'Стрічка',type:'select',opts:['Репс','Атлас','Кіпр','Інша'],show:v=>v.hType==='Стрічка'},
            {k:'ribFix',label:'Кріплення стрічки',type:'select',opts:['Вклеєна','Вузол'],show:v=>v.hType==='Стрічка'},
-           {k:'hLen',label:'Довжина, см',type:'number',ph:'40',show:v=>v.hType!=='Без ручок'},
+           {k:'hLen',label:'Довжина, м',type:'number',ph:'1.5',show:v=>v.hType!=='Без ручок'},
            {k:'hWid',label:'Ширина, мм',type:'number',ph:'10',show:v=>v.hType==='Стрічка'},
-           {k:'hCol',label:'Колір',type:'text',ph:'чорний',show:v=>v.hType!=='Без ручок'},
+           {k:'hCol',label:'Колір',type:'text',ph:'чорні',show:v=>v.hType!=='Без ручок'},
            {k:'hNote',label:'Додатково',type:'text',ph:'',show:v=>v.hType!=='Без ручок'}]}
 ];
 
@@ -272,8 +310,8 @@ function applyTheme(){
 if(tg){tg.ready();tg.expand();applyTheme();tg.onEvent('themeChanged',applyTheme)}
 
 /* ====== СТАН ====== */
-const KEY='prorah-guide-v1';
-const blank=()=>({qty:'',branch:'box',box:{v:{},done:{}},bag:{v:{},done:{}}});
+const KEY='prorah-guide-v2';
+const blank=()=>({qty:'',branch:'box',box:{v:{}},bag:{v:{}}});
 let S=blank();
 const cloud=tg&&tg.CloudStorage&&tg.isVersionAtLeast&&tg.isVersionAtLeast('6.9')?tg.CloudStorage:null;
 const parse=t=>{try{const o=JSON.parse(t);return o&&o.box&&o.bag?Object.assign(blank(),o):null}catch(e){return null}};
@@ -294,16 +332,28 @@ const save=()=>{
   if(cloud&&json.length<4000){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{try{cloud.setItem(KEY,json)}catch(e){}},600)}
 };
 
-const gcd=(a,b)=>b?gcd(b,a%b):a, lcm=(a,b)=>a/gcd(a,b)*b;
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmt=n=>Number(n).toLocaleString('uk-UA');
 const stepsFor=br=>STEPS.filter(s=>s.br.includes(br));
+const fieldsOf=(s,v)=>typeof s.fields==='function'?s.fields(v):s.fields;
+const hintOf=(s,v)=>typeof s.hint==='function'?s.hint(v):s.hint;
+const clicheOf=(s,v)=>typeof s.cliche==='function'?s.cliche(v):s.cliche;
 
 function fieldHTML(br,f){
   const v=S[br].v[f.k]??'';
+  if(f.type==='checkbox'){
+    return `<label class="f checkbox" data-f="${f.k}"><input type="checkbox" data-k="${f.k}"${v?' checked':''}> ${esc(f.label)}</label>`;
+  }
   let ctrl;
-  if(f.type==='select'){
+  if(f.groups){
+    ctrl=`<select data-k="${f.k}">${f.groups.map(g=>{
+      const opts=g.opts.map(o=>`<option${o===v?' selected':''}>${esc(o)}</option>`).join('');
+      return g.label?`<optgroup label="${esc(g.label)}">${opts}</optgroup>`:opts;
+    }).join('')}</select>`;
+  }else if(f.type==='select'){
     ctrl=`<select data-k="${f.k}">${f.opts.map(o=>`<option${o===v?' selected':''}>${esc(o)}</option>`).join('')}</select>`;
+  }else if(f.type==='chips'){
+    ctrl=`<div class="chiprow" data-chip="${f.k}">${f.opts.map(o=>`<button type="button" data-v="${o}"${String(o)===String(v)?' class="active"':''}>${o}</button>`).join('')}</div>`;
   }else{
     ctrl=`<input type="${f.type}" data-k="${f.k}" value="${esc(v)}" placeholder="${esc(f.ph||'')}"${f.type==='number'?' min="0" inputmode="decimal"':''}>`;
   }
@@ -311,91 +361,160 @@ function fieldHTML(br,f){
 }
 
 function render(br){
-  const col=document.querySelector(`.col[data-br="${br}"]`);
+  const col=document.querySelector(`.col[data-br="${br}"]`), v=S[br].v;
   const list=stepsFor(br);
-  // initialise select defaults
-  list.forEach(s=>s.fields.forEach(f=>{if(f.type==='select'&&!f.opts.includes(S[br].v[f.k]))S[br].v[f.k]=f.opts[0]}));
-  col.innerHTML=`<div class="colhead"><h2>${br==='box'?'Коробка':'Пакет'}</h2><div class="bar"><i></i></div><div class="prog"></div></div>
+  // initialise select/checkbox defaults
+  list.forEach(s=>fieldsOf(s,v).forEach(f=>{
+    if((f.type==='select'||f.groups)&&!f.opts.includes(v[f.k])) v[f.k]=f.default!=null?f.default:f.opts[0];
+    else if(f.type==='checkbox'&&v[f.k]==null) v[f.k]=f.default??false;
+  }));
+  col.innerHTML=`<div class="colhead"><h2>${br==='box'?'Коробка':'Пакет'}</h2></div>
   <ol class="steps">${list.map((s,i)=>`<li class="step" data-step="${s.id}">
-    <header><span class="num">${i+3}</span><h3>${s.title}</h3>
-    <label class="check"><input type="checkbox" data-done="${s.id}"${S[br].done[s.id]?' checked':''}>Готово</label></header>
-    <div class="hint">${s.hint}</div>
-    <div class="fields">${s.fields.map(f=>fieldHTML(br,f)).join('')}</div>
+    <div class="stephead"><span class="num">${i+2}</span><h3>${s.title}</h3></div>
+    <div class="hint">${hintOf(s,v)}</div>
+    <div class="fields">${fieldsOf(s,v).map(f=>fieldHTML(br,f)).join('')}</div>
     ${s.extra||''}<div class="out"></div></li>`).join('')}</ol>
   <div class="tz"><header><h3>ТЗ: ${br==='box'?'коробка':'пакет'}</h3><button class="btn small" data-copy>Скопіювати ТЗ</button></header><pre></pre></div>`;
   update(br);
 }
 
-function layoutCalc(br,s){
-  const v=S[br].v, parts=s.calc.map(([k,n])=>[n,parseInt(v[k],10)]).filter(p=>p[1]>0);
-  if(parts.length!==s.calc.length) return null;
-  const L=parts.reduce((a,p)=>lcm(a,p[1]),1), opt=SHEET_STEP*L;
-  const q=parseInt(S.qty,10); const rec=q>0?Math.ceil(q/opt)*opt:null;
-  return {opt,rec,parts:parts.map(([n,u])=>[n,u,opt/u])};
-}
-
 function applyFormat(br){
   const v=S[br].v, f=(FORMATS[br]||[]).find(x=>x.name===v.fmt);
   if(!f) return;
-  ['dims','knife','upLid','upBot','upBag'].forEach(k=>{
-    if(f[k]!=null){v[k]=String(f[k]);const i=document.querySelector(`.col[data-br="${br}"] [data-k="${k}"]`);if(i)i.value=v[k]}
-  });
+  v.manual=false;
+  if(br==='box') v.parts=f.parts===1?PARTS_OPTS[1]:PARTS_OPTS[0];
+  ['dims','knife','upLid','upBot','upBag','up','sheet','sheetLid','sheetBot'].forEach(k=>{if(f[k]!=null) v[k]=String(f[k])});
 }
 
 function update(br){
   const col=document.querySelector(`.col[data-br="${br}"]`), v=S[br].v, list=stepsFor(br);
   list.forEach(s=>{
     const li=col.querySelector(`[data-step="${s.id}"]`);
-    li.classList.toggle('done',!!S[br].done[s.id]);
-    s.fields.forEach(f=>{li.querySelector(`[data-f="${f.k}"]`).hidden=f.show?!f.show(v):false});
+    const flds=fieldsOf(s,v);
+    flds.forEach(f=>{
+      li.querySelector(`[data-f="${f.k}"]`).hidden=f.show?!f.show(v):false;
+      if(f.type==='chips') li.querySelectorAll(`[data-chip="${f.k}"] button`).forEach(b=>b.classList.toggle('active',b.dataset.v===String(v[f.k]||'')));
+    });
     const out=li.querySelector('.out');
-    if(s.calc){
-      const r=layoutCalc(br,s);
-      out.innerHTML=r?`<div class="calc"><div>Оптимальний тираж (крок)</div><div class="big">${fmt(r.opt)} шт</div>
-      <table>${r.parts.map(([n,u,sh])=>`<tr><td>${n}: ${u} шт/лист</td><td>${fmt(sh)} листів</td></tr>`).join('')}</table>
-      ${r.rec?`<div class="sub">Під тираж клієнта ${fmt(S.qty)} шт пропонуємо: <b>${fmt(r.rec)} шт</b></div>`:''}</div>`
-      :`<div class="note info">Введіть кількість на лист для ${s.calc.length>1?'кожної деталі':'пакета'}, і тут з'явиться оптимальний тираж.</div>`;
-    }
     if(s.cliche){
-      const w=parseFloat(v.embW),h=parseFloat(v.embH),on=v.emb&&v.emb!==EMB_OPTS[0];
-      out.innerHTML=on&&!(w>0&&h>0)?'<div class="note warn"><b>Вкажіть розмір тиснення вручну</b> (ширина і висота, см). Без нього не порахувати кліше.</div>':on&&w>0&&h>0?`<div class="calc"><div>Кліше ${fmt(w)}×${fmt(h)} см = ${fmt(+(w*h).toFixed(2))} см²</div><div class="big">${fmt(+(w*h*CLICHE_PRICE).toFixed(2))} грн</div></div>`:'';
+      const groups=clicheOf(s,v).map(g=>{
+        const on=g.emb&&g.emb!==EMB_OPTS[0], w=parseFloat(g.w), h=parseFloat(g.h), ok=on&&w>0&&h>0;
+        return {label:g.label,on,ok,w,h,area:ok?+(w*h).toFixed(2):0,cost:ok?+(w*h*CLICHE_PRICE).toFixed(2):0};
+      });
+      const active=groups.filter(g=>g.on), missing=active.filter(g=>!g.ok), ready=active.filter(g=>g.ok);
+      if(!active.length) out.innerHTML='';
+      else if(missing.length) out.innerHTML=`<div class="note warn"><b>Вкажіть розмір тиснення вручну</b>${missing.map(g=>g.label?` (${g.label})`:'').join('')} — ширина і висота, см. Без нього не порахувати кліше.</div>`;
+      else{
+        const totalArea=+ready.reduce((a,g)=>a+g.area,0).toFixed(2), totalCost=+ready.reduce((a,g)=>a+g.cost,0).toFixed(2);
+        out.innerHTML=ready.length>1
+          ?`<div class="calc">${ready.map(g=>`<div>Кліше${g.label?' ('+g.label+')':''} ${fmt(g.w)}×${fmt(g.h)} см = ${fmt(g.area)} см²</div>`).join('')}<div class="big">${fmt(totalCost)} грн</div><div class="sub">Разом ${fmt(totalArea)} см²</div></div>`
+          :`<div class="calc"><div>Кліше ${fmt(ready[0].w)}×${fmt(ready[0].h)} см = ${fmt(ready[0].area)} см²</div><div class="big">${fmt(ready[0].cost)} грн</div></div>`;
+      }
     }
   });
-  const done=list.filter(s=>S[br].done[s.id]).length;
-  col.querySelector('.bar i').style.width=(done/list.length*100)+'%';
-  col.querySelector('.prog').textContent=`Готово ${done} з ${list.length} кроків`;
   col.querySelector('.tz pre').textContent=tz(br);
 }
 
-function tz(br){
-  const v=S[br].v, n='не вказано', L=[];
-  const s=stepsFor(br).find(x=>x.calc), r=layoutCalc(br,s);
-  L.push(`${br==='box'?'Коробка':'Пакет'}`);
-  L.push(`Тираж: ${S.qty?fmt(S.qty)+' шт':n}${r?` (оптимальний крок ${fmt(r.opt)} шт${r.rec?`, пропозиція ${fmt(r.rec)} шт`:''})`:''}`);
-  L.push(`Розмір: ${v.dims||n}, мм`);
-  L.push(`Ніж: ${v.knife||n}`);
-  L.push(`Матеріал: ${v.mat}`);
-  if(r) L.push(`Розкладка: ${r.parts.map(([p,u,sh])=>`${p.toLowerCase()} ${u} шт/лист, ${fmt(sh)} листів`).join('; ')}`);
-  else L.push(`Розкладка: ${n}`);
-  L.push(`Друк: ${v.print}${v.print==='CMYK + пантони'?`, CMYK: ${v.cmykN} фарб`:''}${/антон/.test(v.print)?`, пантонів: ${v.pms||n}`:''}`);
-  L.push(`Ламінація: ${v.lam===LAM_OPTS[0]?'немає':v.lam+', '+v.lamSide}`);
-  if(v.emb===EMB_OPTS[0]) L.push('Тиснення: немає');
-  else L.push(`Тиснення: ${v.emb}, ${v.embW&&v.embH?v.embW+'×'+v.embH+' см':'розмір '+n}`);
-  L.push('Висічка: так');
-  L.push(`${br==='box'?'Поклейка':'Склейка'}: ${v.gluePts?v.gluePts+' точ.':'точок '+n}${br==='bag'?', '+v.glueSide:''}`);
-  if(br==='bag'){
-    if(v.hType==='Без ручок') L.push('Ручки: немає');
-    else if(v.hType==='Шнур') L.push(`Ручки: шнур, ${v.cordFix.toLowerCase()}, довжина ${v.hLen?v.hLen+' см':n}, колір ${v.hCol||n}${v.hNote?', '+v.hNote:''}`);
-    else L.push(`Ручки: стрічка ${v.ribMat.toLowerCase()}, ${v.ribFix.toLowerCase()}, довжина ${v.hLen?v.hLen+' см':n}, ширина ${v.hWid?v.hWid+' мм':n}, колір ${v.hCol||n}${v.hNote?', '+v.hNote:''}`);
+function lamWord(type){ return LAM_OUT[type]||type.toLowerCase(); }
+function lamLine(v,which){
+  const out=v['lam'+which+'Out'], inn=v['lam'+which+'In'];
+  const outOn=out&&out!==LAM_OPTS[0], inOn=inn&&inn!==LAM_OPTS[0];
+  if(!outOn&&!inOn) return null;
+  if(outOn&&inOn) return out===inn?`${lamWord(out)} двостороння`:`${lamWord(out)} ззовні + ${lamWord(inn)} всередині`;
+  return `${lamWord(outOn?out:inn)} ${outOn?'зовнішня':'внутрішня'}`;
+}
+function embLine(v,which){
+  const type=v['emb'+which];
+  if(!type||type===EMB_OPTS[0]) return null;
+  const w=parseFloat(v['emb'+which+'W']), h=parseFloat(v['emb'+which+'H']);
+  if(!(w>0&&h>0)) return EMB_OUT[type]||type.toLowerCase();
+  const cost=+(w*h*CLICHE_PRICE).toFixed(2);
+  return `${EMB_OUT[type]||type.toLowerCase()} ${w}×${h}см (${fmt(cost)} грн)`;
+}
+function printSide(v,which,dir){
+  const type=v['print'+which+dir];
+  if(!type||type==='Немає') return null;
+  let n=0; const labels=[];
+  if(type==='CMYK'||type==='CMYK + Пантони'){ n+=Math.max(1,parseInt(v['print'+which+dir+'CmykN'],10)||4); labels.push('CMYK'); }
+  if(type==='Пантони'||type==='CMYK + Пантони'){ const c=Math.max(1,parseInt(v['print'+which+dir+'PmsN'],10)||1); n+=c; labels.push(c>1?`${c}x Pantone`:'Pantone'); }
+  return {n,label:labels.join(' + ')};
+}
+function printLine(v,which){
+  const out=printSide(v,which,'Out'), inn=printSide(v,which,'In');
+  if(!out&&!inn) return null;
+  const labels=[...new Set([out,inn].filter(Boolean).map(x=>x.label))];
+  return `${out?out.n:0}+${inn?inn.n:0} (${labels.join(' + ')})`;
+}
+function bagBottom(dims){
+  const nums=(dims||'').match(/\d+(?:[.,]\d+)?/g);
+  if(!nums||nums.length<2) return null;
+  const r=x=>{const n=Math.max(0,parseFloat(x.replace(',','.'))-6);return Number.isInteger(n)?n:+n.toFixed(1)};
+  return `${r(nums[0])}×${r(nums[1])}`;
+}
+function handleLine(v){
+  if(!v.hType||v.hType==='Без ручок') return null;
+  const len=parseFloat(v.hLen)>0?`${v.hLen}м`:'';
+  if(v.hType==='Стрічка'){
+    const w=parseFloat(v.hWid)>0?` (${v.hWid}мм)`:'';
+    const head=`${(v.ribMat||'').toLowerCase()} ${v.hCol||''}${w}`.replace(/\s+/g,' ').trim();
+    const fix=v.ribFix==='Вклеєна'?'поклейка':(v.ribFix||'').toLowerCase();
+    const tail=[len,fix].filter(Boolean).join(' + ');
+    return [head,tail].filter(Boolean).join(', ')+(v.hNote?', '+v.hNote:'');
   }
+  const head=`шнур${v.hCol?' '+v.hCol:''}`;
+  const fix=(v.cordFix||'').toLowerCase();
+  const tail=[len,fix].filter(Boolean).join(' + ');
+  return [head,tail].filter(Boolean).join(', ')+(v.hNote?', '+v.hNote:'');
+}
+
+function ptsWord(n){
+  n=Math.abs(Math.round(parseFloat(n)));
+  const m10=n%10, m100=n%100;
+  if(m10===1&&m100!==11) return 'точка';
+  if(m10>=2&&m10<=4&&(m100<12||m100>14)) return 'точки';
+  return 'точок';
+}
+
+function tz(br){
+  const v=S[br].v, isBox=br==='box', parts2=isBox&&partsOf(v)===2;
+  const L=[], push=(label,val)=>{if(val) L.push(`${label}: ${val}`)};
+
+  L.push(`${isBox?'Коробка':'Пакет'}${v.dims?' '+v.dims:''}`);
+  if(S.qty) L.push(`Тираж ${fmt(S.qty)}шт`);
+  L.push('');
+
+  function block(label,matK,sheetK,upK,printWhich,lamWhich,embWhich,glueK){
+    push(label,v[matK]);
+    push('ФОРМАТ', v[sheetK]&&parseFloat(v[upK])>0?`${v[sheetK]}, ${v[upK]}шт`:'');
+    push('ДРУК', printLine(v,printWhich));
+    push('ЛАМІНАЦІЯ', lamLine(v,lamWhich));
+    push('ТИСНЕННЯ', embLine(v,embWhich));
+    if(glueK) push('ПОКЛЕЙКА', parseFloat(v[glueK])>0?`${v[glueK]} ${ptsWord(v[glueK])}`:'');
+    L.push('ВИСІЧКА');
+  }
+
+  if(parts2){
+    block('КРИШКА','matLid','sheetLid','upLid','Lid','Lid','Lid','glueLidPts');
+    L.push('');
+    block('ДНО','matBot','sheetBot','upBot','Bot','Bot','Bot','glueBotPts');
+  }else{
+    block('КАРТОН','mat','sheet',isBox?'up':'upBag','','','');
+    if(!isBox){
+      const bb=bagBottom(v.dims); push('ДНО', bb?`${bb} + поклейка`:'');
+      push('РУЧКИ', handleLine(v));
+      push('ПОКЛЕЙКА', v.glueSide||'');
+    }else if(parseFloat(v.gluePts)>0){
+      L.push(`ПОКЛЕЙКА: ${v.gluePts} ${ptsWord(v.gluePts)}`);
+    }
+  }
+
+  while(L.length && L[L.length-1]==='') L.pop();
   return L.join('\n');
 }
 
-function gate(){
-  const g=document.getElementById('gate'), q=parseInt(S.qty,10), cols=document.getElementById('cols');
-  g.className='gate'; cols.classList.remove('blocked');
-  if(q>0&&q<MICRO_LIMIT){g.className='gate stop';g.textContent=`Мікротираж (менше ${fmt(MICRO_LIMIT)} шт). Далі не рахуємо.`;cols.classList.add('blocked')}
-  else if(q>=MICRO_LIMIT){g.className='gate ok';g.textContent='Тираж підходить. Переходимо до питання «що пакуємо».'}
+function markQtyActive(){
+  const q=parseInt(S.qty,10);
+  document.querySelectorAll('#qtyQuick button').forEach(b=>b.classList.toggle('active',b.dataset.v===String(q||'')));
 }
 
 /* ====== ПОДІЇ ====== */
@@ -407,12 +526,10 @@ async function copyText(text){
     let ok=false;try{ok=document.execCommand('copy')}catch(e2){} t.remove();return ok;
   }
 }
-const microBlocked=()=>{const q=parseInt(S.qty,10);return q>0&&q<MICRO_LIMIT};
 const tzText=br=>document.querySelector(`.col[data-br="${br}"] .tz pre`).textContent;
 
 async function sendTz(){
   const br=S.branch;
-  if(microBlocked()){const m=`Мікротираж (менше ${fmt(MICRO_LIMIT)} шт). Далі не рахуємо.`;tg?tg.showAlert(m):alert(m);return}
   const text=tzText(br);
   if(tg&&SHARE_MODE){
     tg.openTelegramLink('https://t.me/share/url?url='+encodeURIComponent(APP_URL||'https://t.me')+'&text='+encodeURIComponent(text));
@@ -435,24 +552,35 @@ function setBranch(br){
 }
 
 function bind(){
-  qty.addEventListener('input',()=>{S.qty=qty.value;save();gate();update('box');update('bag')});
+  qty.addEventListener('input',()=>{S.qty=qty.value;save();markQtyActive();update('box');update('bag')});
+  document.getElementById('qtyQuick').addEventListener('click',e=>{
+    const b=e.target.closest('button[data-v]'); if(!b)return;
+    qty.value=b.dataset.v; S.qty=qty.value; save(); markQtyActive(); update('box'); update('bag');
+  });
   document.querySelectorAll('.col').forEach(col=>{
     const br=col.dataset.br;
     col.addEventListener('input',e=>{
       const k=e.target.dataset.k; if(!k)return;
-      S[br].v[k]=e.target.value;
-      if(k==='fmt') applyFormat(br);
+      S[br].v[k]=e.target.type==='checkbox'?e.target.checked:e.target.value;
+      if(k==='glueSide') S[br].v.glueSide_touched=true;
+      if(k==='fmt'){applyFormat(br);save();render(br);return}
+      if(k==='parts'||k==='manual'){save();render(br);return}
       save(); update(br);
     });
-    col.addEventListener('change',e=>{
-      const id=e.target.dataset.done; if(id==null)return;
-      S[br].done[id]=e.target.checked; save(); update(br);
+    col.addEventListener('click',e=>{
+      const chipBtn=e.target.closest('[data-chip] button');
+      if(chipBtn){
+        const k=chipBtn.closest('[data-chip]').dataset.chip;
+        S[br].v[k]=chipBtn.dataset.v;
+        save(); update(br);
+        return;
+      }
+      if(e.target.closest('[data-copy]'))sendTz();
     });
-    col.addEventListener('click',e=>{if(e.target.closest('[data-copy]'))sendTz()});
   });
   document.querySelectorAll('button[data-show]').forEach(b=>b.addEventListener('click',()=>setBranch(b.dataset.show)));
   document.getElementById('reset').addEventListener('click',()=>{
-    const go=()=>{S=blank();save();qty.value='';gate();render('box');render('bag');setBranch('box')};
+    const go=()=>{S=blank();save();qty.value='';markQtyActive();render('box');render('bag');setBranch('box')};
     if(tg) tg.showConfirm('Очистити всі поля і позначки?',ok=>{if(ok)go()});
     else if(confirm('Очистити всі поля і позначки?')) go();
   });
@@ -461,7 +589,7 @@ function bind(){
 
 load().then(state=>{
   S=state; qty.value=S.qty;
-  render('box'); render('bag'); gate(); bind(); setBranch(S.branch==='bag'?'bag':'box');
+  render('box'); render('bag'); markQtyActive(); bind(); setBranch(S.branch==='bag'?'bag':'box');
 });
 </script>
 </body>
