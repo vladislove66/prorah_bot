@@ -500,7 +500,8 @@ function tz(br){
   const v=S[br].v, isBox=br==='box', parts2=isBox&&partsOf(v)===2;
   const L=[], push=(label,val)=>{if(val) L.push(`${label}: ${val}`)};
 
-  const headName=(!isOther(v)&&v.fmt)?v.fmt:v.dims;
+  const noMd=s=>String(s||'').replace(/\*/g,'×'); // Telegram трактує *text* як курсив
+  const headName=noMd((!isOther(v)&&v.fmt)?v.fmt:v.dims);
   L.push(`${isBox?'Коробка':'Пакет'}${headName?' '+headName:''}`);
   if(S.qty) L.push(`Тираж ${fmt(S.qty)}шт`);
   L.push('');
