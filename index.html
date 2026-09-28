@@ -192,26 +192,31 @@ const CAT_PARTS={'КД Низька':2,'КД Висока':2,'Пенал':2};
 const partsOf=v=>v.parts===PARTS_OPTS[1]?1:2;
 
 const LAM_OUT = {'Матова':'матова','Глянцева':'глянцева','Софт-тач':'софт-тач','Металізована: срібло':'срібна','Металізована: золото':'золота','Кольорова (інша)':'кольорова'};
-function lamFields(which,labelPrefix,outDefault){
+function lamFields(which,labelPrefix,outDefault,inDefault){
   const lp=labelPrefix?labelPrefix+': ':'';
   const out={k:'lam'+which+'Out',label:lp+'Ламінація зовні',type:'select',opts:LAM_OPTS};
   if(outDefault) out.default=outDefault;
-  return [out,{k:'lam'+which+'In',label:lp+'Ламінація всередині',type:'select',opts:LAM_OPTS}];
+  const inn={k:'lam'+which+'In',label:lp+'Ламінація всередині',type:'select',opts:LAM_OPTS};
+  if(inDefault) inn.default=inDefault;
+  return [out,inn];
 }
-const LAM_FIELDS_1=lamFields('','');
-const LAM_FIELDS_2=[...lamFields('Lid','Кришка'),...lamFields('Bot','Дно')];
+const LAM_FIELDS_1=lamFields('','',undefined,'Глянцева');
+const LAM_FIELDS_2=[...lamFields('Lid','Кришка'),...lamFields('Bot','Дно',undefined,'Глянцева')];
 const LAM_FIELDS_BAG=lamFields('','','Матова');
 const EMB_FIELDS_1=[
-  {k:'emb',label:'Тип',type:'select',opts:EMB_OPTS},
+  {k:'emb',label:'Тип тиснення',type:'select',opts:EMB_OPTS},
   {k:'embW',label:'Розмір тиснення: ширина, см',type:'number',ph:'5',show:v=>v.emb&&v.emb!==EMB_OPTS[0]},
-  {k:'embH',label:'Розмір тиснення: висота, см',type:'number',ph:'3',show:v=>v.emb&&v.emb!==EMB_OPTS[0]}];
+  {k:'embH',label:'Розмір тиснення: висота, см',type:'number',ph:'3',show:v=>v.emb&&v.emb!==EMB_OPTS[0]},
+  {k:'lac',label:'Вибірковий лак',type:'checkbox'}];
 const EMB_FIELDS_2=[
   {k:'embLid',label:'Кришка: тип тиснення',type:'select',opts:EMB_OPTS},
   {k:'embLidW',label:'Кришка: ширина, см',type:'number',ph:'5',show:v=>v.embLid&&v.embLid!==EMB_OPTS[0]},
   {k:'embLidH',label:'Кришка: висота, см',type:'number',ph:'3',show:v=>v.embLid&&v.embLid!==EMB_OPTS[0]},
+  {k:'lacLid',label:'Кришка: вибірковий лак',type:'checkbox'},
   {k:'embBot',label:'Дно: тип тиснення',type:'select',opts:EMB_OPTS},
   {k:'embBotW',label:'Дно: ширина, см',type:'number',ph:'5',show:v=>v.embBot&&v.embBot!==EMB_OPTS[0]},
-  {k:'embBotH',label:'Дно: висота, см',type:'number',ph:'3',show:v=>v.embBot&&v.embBot!==EMB_OPTS[0]}];
+  {k:'embBotH',label:'Дно: висота, см',type:'number',ph:'3',show:v=>v.embBot&&v.embBot!==EMB_OPTS[0]},
+  {k:'lacBot',label:'Дно: вибірковий лак',type:'checkbox'}];
 const MAT_FIELDS_1=[{k:'mat',label:'Картон',type:'select',opts:MAT_BOX_OPTS}];
 const MAT_FIELDS_2=[
   {k:'matLid',label:'Кришка: картон',type:'select',opts:MAT_BOX_OPTS},
@@ -275,14 +280,14 @@ const STEPS = [
   {id:'lam', br:['bag'], title:'Ламінація',
    hint:'<p>Глянцева й матова коштують однаково. Усі інші види (срібло, золото, кольорова, софт-тач) — дорожчі. За замовчуванням матова зовнішня — це найпоширеніший варіант.</p>',
    fields:LAM_FIELDS_BAG},
-  {id:'emb', br:['box'], title:'Тиснення',
-   hint:v=>`<p>Сліпе або плівками (срібло, золото тощо). Вказуємо розмір вручну.${partsOf(v)===2?' На двочастинному ножі — окремо для кришки і дна.':''} Для тиснення робиться кліше: ${String(CLICHE_PRICE).replace('.',',')} грн за 1 см².</p>`,
+  {id:'emb', br:['box'], title:'Оздоблення',
+   hint:v=>`<p>Тиснення сліпе або плівками (срібло, золото тощо), розмір вручну. Для тиснення робиться кліше: ${String(CLICHE_PRICE).replace('.',',')} грн за 1 см². Тут же — вибірковий лак.${partsOf(v)===2?' На двочастинному ножі — окремо для кришки і дна.':''}</p>`,
    fields:v=>partsOf(v)===2?EMB_FIELDS_2:EMB_FIELDS_1,
    cliche:v=>partsOf(v)===2
      ?[{label:'кришка',emb:v.embLid,w:v.embLidW,h:v.embLidH},{label:'дно',emb:v.embBot,w:v.embBotW,h:v.embBotH}]
      :[{label:'',emb:v.emb,w:v.embW,h:v.embH}]},
-  {id:'emb', br:['bag'], title:'Тиснення',
-   hint:`<p>Сліпе або плівками (срібло, золото тощо). Вказуємо розмір. Для тиснення робиться кліше: ${String(CLICHE_PRICE).replace('.',',')} грн за 1 см².</p>`,
+  {id:'emb', br:['bag'], title:'Оздоблення',
+   hint:`<p>Тиснення сліпе або плівками (срібло, золото тощо), розмір вручну. Для тиснення робиться кліше: ${String(CLICHE_PRICE).replace('.',',')} грн за 1 см². Тут же — вибірковий лак.</p>`,
    fields:EMB_FIELDS_1,
    cliche:v=>[{label:'',emb:v.emb,w:v.embW,h:v.embH}]},
   {id:'glue', br:['box'], title:'Поклейка',
@@ -511,6 +516,7 @@ function tz(br){
     push('ФОРМАТ', v[sheetK]&&parseFloat(v[upK])>0?`${v[sheetK]}, ${v[upK]}шт`:'');
     push('ДРУК', printLine(v,printWhich));
     push('ЛАМІНАЦІЯ', lamLine(v,lamWhich));
+    if(v['lac'+embWhich]) L.push('ВИБІРКОВИЙ ЛАК');
     push('ТИСНЕННЯ', embLine(v,embWhich));
     if(glueK) push('ПОКЛЕЙКА', parseFloat(v[glueK])>0?`${v[glueK]} ${ptsWord(v[glueK])}`:'');
     L.push('ВИСІЧКА');
