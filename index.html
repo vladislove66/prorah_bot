@@ -189,6 +189,17 @@ const GLUE_FIXED_CATS=['Пенал'];
 const GLUE_DEFAULT1_CATS=['Лодочка','Коробка із язичками','Дитяче Меню','Кебаб','Інші'];
 const OTHER_CAT='Своя категорія';
 const CAT_PARTS={'КД Низька':2,'КД Висока':2,'Пенал':2};
+const WINDOW_CATS_LID=['КД Низька','КД Висока','Пенал'];
+const WINDOW_CATS_SINGLE=['Самозбірна висока','Самозбірна низька','Самозбірна MINI'];
+const hasWindowOpt=v=>WINDOW_CATS_LID.includes(v.cat)||WINDOW_CATS_SINGLE.includes(v.cat);
+const lamWordOf=(v,which)=>{const o=v['lam'+which+'Out'],i=v['lam'+which+'In'];return{glossyOut:o==='Глянцева',glossyIn:i==='Глянцева',matteOut:o==='Матова',matteIn:i==='Матова'};};
+function windowNote(v,which){
+  if(!v['win'+which]) return '';
+  const g=lamWordOf(v,which);
+  if(g.matteOut||g.matteIn) return '<div class="note warn"><b>Матова ламінація не може бути на елементі з вікном.</b> Заміни на глянцеву (зовні та/або всередині).</div>';
+  if(!g.glossyOut&&!g.glossyIn) return '<div class="note warn">На елементі з вікном потрібна глянцева ламінація — зовні та/або всередині.</div>';
+  return '';
+}
 const partsOf=v=>v.parts===PARTS_OPTS[1]?1:2;
 
 const LAM_OUT = {'Матова':'матова','Глянцева':'глянцева','Софт-тач':'софт-тач','Металізована: срібло':'срібна','Металізована: золото':'золота','Кольорова (інша)':'кольорова'};
@@ -274,8 +285,15 @@ const STEPS = [
   {id:'print', br:['box'], title:'Друк', hint:PRINT_HINT, extra:PRINT_EXTRA,
    fields:v=>partsOf(v)===2?PRINT_FIELDS_2:PRINT_FIELDS_1},
   {id:'print', br:['bag'], title:'Друк', hint:PRINT_HINT, extra:PRINT_EXTRA, fields:PRINT_FIELDS_1},
+  {id:'window', br:['box'], title:'Вікно', hidden:v=>!hasWindowOpt(v),
+   hint:v=>WINDOW_CATS_LID.includes(v.cat)?'':'<p>Вікно на всій коробці.</p>',
+   note:v=>windowNote(v,WINDOW_CATS_LID.includes(v.cat)?'Lid':''),
+   fields:v=>WINDOW_CATS_LID.includes(v.cat)
+     ?[{k:'winLid',label:'Кришка: вікно',type:'checkbox'}]
+     :[{k:'win',label:'Вікно',type:'checkbox'}]},
   {id:'lam', br:['box'], title:'Ламінація',
    hint:'<p>Глянцева й матова коштують однаково. Усі інші види (срібло, золото, кольорова, софт-тач) — дорожчі.</p>',
+   note:v=>partsOf(v)===2?windowNote(v,'Lid'):windowNote(v,''),
    fields:v=>partsOf(v)===2?LAM_FIELDS_2:LAM_FIELDS_1},
   {id:'lam', br:['bag'], title:'Ламінація',
    hint:'<p>Глянцева й матова коштують однаково. Усі інші види (срібло, золото, кольорова, софт-тач) — дорожчі. За замовчуванням матова зовнішня — це найпоширеніший варіант.</p>',
@@ -399,7 +417,7 @@ function render(br){
     <div class="stephead"><span class="num">${i+2}</span><h3>${s.title}</h3></div>
     <div class="hint">${hintOf(s,v)}</div>
     <div class="fields">${fieldsOf(s,v).map(f=>fieldHTML(br,f)).join('')}</div>
-    ${s.extra||''}<div class="out"></div></li>`).join('')}</ol>
+    ${s.extra||''}<div class="dyn"></div><div class="out"></div></li>`).join('')}</ol>
   <div class="tz"><header><button class="btn small" data-copy>Скопіювати ТЗ</button></header><pre></pre></div>`;
   update(br);
 }
@@ -421,6 +439,7 @@ function update(br){
       li.querySelector(`[data-f="${f.k}"]`).hidden=f.show?!f.show(v):false;
       if(f.type==='chips') li.querySelectorAll(`[data-chip="${f.k}"] button`).forEach(b=>b.classList.toggle('active',b.dataset.v===String(v[f.k]||'')));
     });
+    if(s.note){ const dyn=li.querySelector('.dyn'); if(dyn) dyn.innerHTML=s.note(v); }
     const out=li.querySelector('.out');
     if(s.cliche){
       const groups=clicheOf(s,v).map(g=>{
@@ -511,11 +530,19 @@ function tz(br){
   if(S.qty) L.push(`Тираж ${fmt(S.qty)}шт`);
   L.push('');
 
-  function block(label,matK,sheetK,upK,printWhich,lamWhich,embWhich,glueK,fixedGlueAfter){
+  function block(label,matK,sheetK,upK,printWhich,lamWhich,embWhich,glueK,fixedGlueAfter,winK){
     push(label,v[matK]);
     push('ФОРМАТ', v[sheetK]&&parseFloat(v[upK])>0?`${v[sheetK]}, ${v[upK]}шт`:'');
     push('ДРУК', printLine(v,printWhich));
-    push('ЛАМІНАЦІЯ', lamLine(v,lamWhich));
+    const winOn=winK&&v[winK];
+    if(winOn&&v['lam'+lamWhich+'Out']==='Глянцева'&&v['lam'+lamWhich+'In']==='Глянцева'){
+      L.push('ЛАМІНАЦІЯ: глянцева зовнішня');
+      L.push('ВИСІЧКА ВІКНА');
+      L.push('ЛАМІНАЦІЯ: глянцева внутрішня');
+    }else{
+      if(winOn) L.push('ВИСІЧКА ВІКНА');
+      push('ЛАМІНАЦІЯ', lamLine(v,lamWhich));
+    }
     if(v['lac'+embWhich]) L.push('ВИБІРКОВИЙ ЛАК');
     push('ТИСНЕННЯ', embLine(v,embWhich));
     if(glueK) push('ПОКЛЕЙКА', parseFloat(v[glueK])>0?`${v[glueK]} ${ptsWord(v[glueK])}`:'');
@@ -525,11 +552,11 @@ function tz(br){
 
   if(parts2){
     const noGlue=GLUE_NONE_CATS.includes(v.cat), penal=GLUE_FIXED_CATS.includes(v.cat);
-    block('КРИШКА','matLid','sheetLid','upLid','Lid','Lid','Lid',(noGlue||penal)?null:'glueLidPts',penal);
+    block('КРИШКА','matLid','sheetLid','upLid','Lid','Lid','Lid',(noGlue||penal)?null:'glueLidPts',penal,'winLid');
     L.push('');
     block('ДНО','matBot','sheetBot','upBot','Bot','Bot','Bot',(noGlue||penal)?null:'glueBotPts');
   }else{
-    block('КАРТОН','mat','sheet',isBox?'up':'upBag','','','');
+    block('КАРТОН','mat','sheet',isBox?'up':'upBag','','','',undefined,undefined,isBox?'win':null);
     if(!isBox){
       const bb=bagBottom(v.dims); push('ДНО', bb?`${bb} + поклейка`:'');
       push('РУЧКИ', handleLine(v));
