@@ -169,7 +169,7 @@ const MAT_BOX_HINT = '';
 const MAT_BAG_HINT = `<p>Картон 215 г — стандарт: твердий, міцний, дешевий, жовтуватий відтінок. 250 г щільніший і дорожчий. Крейдований — білий, м'який, дорогий.</p>
 <div class="note warn"><b>Увага:</b> крейдований картон не порівнюйте з 215 г лише за щільністю: за твердістю він інший.</div>`;
 
-const PRINT_HINT = `<p>Друк обираємо окремо зовні та всередині: немає / CMYK / пантони / CMYK + пантони разом, і скільки фарб на цій стороні.</p>
+const PRINT_HINT = `<p>Спершу познач галочкою, чи є друк зовні та/або всередині — тоді з'явиться вибір CMYK-кольорів і пантонів для цієї сторони.</p>
 <p><b>Пантони</b> — кожен колір окремо, дорожче; фони обов'язково пантоном.</p>`;
 const PRINT_EXTRA = `<div class="swatches">
   <figure><div class="box sw-ok"></div><figcaption>Так виглядає в макеті</figcaption></figure>
@@ -238,11 +238,15 @@ const MAT_FIELDS_2=[
   {k:'matBot',label:'Дно: картон',type:'select',opts:MAT_BOX_OPTS}];
 function printFields(which,labelPrefix){
   const lp=labelPrefix?labelPrefix+': ':'';
-  const side=(dir,dirLabel)=>[
-    {k:'print'+which+dir,label:lp+'Друк '+dirLabel+': CMYK',type:'cmyk'},
-    {k:'print'+which+dir+'Pms',label:lp+dirLabel+': пантони',type:'checkbox'},
-    {k:'print'+which+dir+'PmsN',label:lp+dirLabel+': скільки пантонів',type:'chips',opts:[1,2,3,4],show:v=>!!v['print'+which+dir+'Pms']}
-  ];
+  const side=(dir,dirLabel)=>{
+    const onKey='print'+which+dir+'On';
+    return [
+      {k:onKey,label:lp+'Друк '+dirLabel,type:'checkbox'},
+      {k:'print'+which+dir,label:lp+dirLabel+': CMYK',type:'cmyk',show:v=>!!v[onKey]},
+      {k:'print'+which+dir+'Pms',label:lp+dirLabel+': пантони',type:'checkbox',show:v=>!!v[onKey]},
+      {k:'print'+which+dir+'PmsN',label:lp+dirLabel+': скільки пантонів',type:'chips',opts:[1,2,3,4],show:v=>!!v[onKey]&&!!v['print'+which+dir+'Pms']}
+    ];
+  };
   return [...side('Out','зовні'),...side('In','всередині')];
 }
 const PRINT_FIELDS_1=printFields('','');
@@ -491,6 +495,7 @@ function embLine(v,which){
 }
 function printSide(v,which,dir){
   const key='print'+which+dir;
+  if(!v[key+'On']) return null;
   const letters=['C','M','Y','K'].filter(ch=>v[key+ch]);
   const pmsOn=!!v[key+'Pms'];
   const pmsN=pmsOn?Math.max(1,parseInt(v[key+'PmsN'],10)||1):0;
@@ -499,7 +504,7 @@ function printSide(v,which,dir){
   const labels=[];
   if(letters.length) labels.push(letters.join(''));
   if(pmsOn) labels.push(`Pantone ${pmsN}x`);
-  return {n,label:labels.join(' + ')};
+  return {n,label:labels.join(', ')};
 }
 function printLine(v,which){
   const out=printSide(v,which,'Out'), inn=printSide(v,which,'In');
