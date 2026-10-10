@@ -86,6 +86,10 @@ ol.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;g
 .chiprow{display:flex;flex-wrap:wrap;gap:6px}
 .chiprow button{border:1.5px solid var(--line);background:var(--paper);border-radius:7px;padding:7px 12px;font-size:14px;font-weight:600;cursor:pointer;color:var(--ink)}
 .chiprow button.active{background:var(--acc,var(--ink));color:#fff;border-color:var(--acc,var(--ink))}
+.cmykrow{display:flex;gap:6px}
+.cmykrow button{width:34px;height:34px;border-radius:50%;border:2px solid var(--cc);background:transparent;color:var(--cc);font-weight:700;font-size:13px;cursor:pointer}
+.cmykrow button.active{background:var(--cc);color:#fff}
+.cmykrow button.active[data-cmyk$="Y"]{color:#1a1a1a}
 .f input:focus,.f select:focus{border-color:var(--acc);outline:none}
 .note{margin-top:12px;padding:10px 12px;border-radius:8px;font-size:14px}
 .note.warn{background:var(--warnbg)}
@@ -175,7 +179,7 @@ const PRINT_EXTRA = `<div class="swatches">
 const LAM_OPTS = ['Без ламінації','Матова','Глянцева','Софт-тач','Металізована: срібло','Металізована: золото','Кольорова (інша)'];
 const EMB_OPTS = ['Без тиснення','Сліпе','Фольга: срібло','Фольга: золото','Фольга: інший колір'];
 const EMB_OUT = {'Сліпе':'сліпе тиснення','Фольга: срібло':'срібною плівкою','Фольга: золото':'золотою плівкою','Фольга: інший колір':'кольоровою плівкою'};
-const PRINT_SIDE_OPTS = ['Немає','CMYK','Пантони','CMYK + Пантони'];
+const CMYK_COLORS={C:'#00A0D8',M:'#E0107A',Y:'#FFE000',K:'var(--ink)'};
 
 const fmtOpts=br=>(FORMATS[br]||[]).map(f=>f.name);
 const isOther=v=>!!v.manual;
@@ -235,9 +239,9 @@ const MAT_FIELDS_2=[
 function printFields(which,labelPrefix){
   const lp=labelPrefix?labelPrefix+': ':'';
   const side=(dir,dirLabel)=>[
-    {k:'print'+which+dir,label:lp+'Друк '+dirLabel,type:'select',opts:PRINT_SIDE_OPTS},
-    {k:'print'+which+dir+'CmykN',label:lp+dirLabel+': CMYK фарб',type:'chips',opts:[1,2,3,4],show:v=>{const t=v['print'+which+dir];return t==='CMYK'||t==='CMYK + Пантони'}},
-    {k:'print'+which+dir+'PmsN',label:lp+dirLabel+': пантонів',type:'chips',opts:[1,2,3,4],show:v=>{const t=v['print'+which+dir];return t==='Пантони'||t==='CMYK + Пантони'}}
+    {k:'print'+which+dir,label:lp+'Друк '+dirLabel+': CMYK',type:'cmyk'},
+    {k:'print'+which+dir+'Pms',label:lp+dirLabel+': пантони',type:'checkbox'},
+    {k:'print'+which+dir+'PmsN',label:lp+dirLabel+': скільки пантонів',type:'chips',opts:[1,2,3,4],show:v=>!!v['print'+which+dir+'Pms']}
   ];
   return [...side('Out','зовні'),...side('In','всередині')];
 }
@@ -386,6 +390,13 @@ function fieldHTML(br,f){
   if(f.type==='checkbox'){
     return `<label class="f checkbox" data-f="${f.k}"><input type="checkbox" data-k="${f.k}"${v?' checked':''}> ${esc(f.label)}</label>`;
   }
+  if(f.type==='cmyk'){
+    const row=Object.entries(CMYK_COLORS).map(([ch,color])=>{
+      const on=!!S[br].v[f.k+ch];
+      return `<button type="button" class="cmykbtn${on?' active':''}" data-cmyk="${f.k}${ch}" style="--cc:${color}">${ch}</button>`;
+    }).join('');
+    return `<div class="f" data-f="${f.k}"><span>${esc(f.label)}</span><div class="cmykrow">${row}</div></div>`;
+  }
   let ctrl;
   if(f.groups){
     ctrl=`<select data-k="${f.k}">${f.groups.map(g=>{
@@ -438,6 +449,7 @@ function update(br){
     flds.forEach(f=>{
       li.querySelector(`[data-f="${f.k}"]`).hidden=f.show?!f.show(v):false;
       if(f.type==='chips') li.querySelectorAll(`[data-chip="${f.k}"] button`).forEach(b=>b.classList.toggle('active',b.dataset.v===String(v[f.k]||'')));
+      if(f.type==='cmyk') Object.keys(CMYK_COLORS).forEach(ch=>{const b=li.querySelector(`[data-cmyk="${f.k}${ch}"]`); if(b) b.classList.toggle('active',!!v[f.k+ch])});
     });
     if(s.note){ const dyn=li.querySelector('.dyn'); if(dyn) dyn.innerHTML=s.note(v); }
     const out=li.querySelector('.out');
@@ -461,12 +473,13 @@ function update(br){
 }
 
 function lamWord(type){ return LAM_OUT[type]||type.toLowerCase(); }
-function lamLine(v,which){
+function lamParts(v,which){
   const out=v['lam'+which+'Out'], inn=v['lam'+which+'In'];
   const outOn=out&&out!==LAM_OPTS[0], inOn=inn&&inn!==LAM_OPTS[0];
-  if(!outOn&&!inOn) return null;
-  if(outOn&&inOn) return out===inn?`${lamWord(out)} двостороння`:`${lamWord(out)} ззовні + ${lamWord(inn)} всередині`;
-  return `${lamWord(outOn?out:inn)} ${outOn?'зовнішня':'внутрішня'}`;
+  const parts=[];
+  if(outOn) parts.push(`${lamWord(out)} зовнішня`);
+  if(inOn) parts.push(`${lamWord(inn)} внутрішня`);
+  return parts;
 }
 function embLine(v,which){
   const type=v['emb'+which];
@@ -477,11 +490,15 @@ function embLine(v,which){
   return `${EMB_OUT[type]||type.toLowerCase()} ${w}×${h}см (${fmt(cost)} грн)`;
 }
 function printSide(v,which,dir){
-  const type=v['print'+which+dir];
-  if(!type||type==='Немає') return null;
-  let n=0; const labels=[];
-  if(type==='CMYK'||type==='CMYK + Пантони'){ n+=Math.max(1,parseInt(v['print'+which+dir+'CmykN'],10)||4); labels.push('CMYK'); }
-  if(type==='Пантони'||type==='CMYK + Пантони'){ const c=Math.max(1,parseInt(v['print'+which+dir+'PmsN'],10)||1); n+=c; labels.push(c>1?`${c}x Pantone`:'Pantone'); }
+  const key='print'+which+dir;
+  const letters=['C','M','Y','K'].filter(ch=>v[key+ch]);
+  const pmsOn=!!v[key+'Pms'];
+  const pmsN=pmsOn?Math.max(1,parseInt(v[key+'PmsN'],10)||1):0;
+  const n=letters.length+pmsN;
+  if(n===0) return null;
+  const labels=[];
+  if(letters.length) labels.push(letters.join(''));
+  if(pmsOn) labels.push(`Pantone ${pmsN}x`);
   return {n,label:labels.join(' + ')};
 }
 function printLine(v,which){
@@ -534,14 +551,14 @@ function tz(br){
     push(label,v[matK]);
     push('ФОРМАТ', v[sheetK]&&parseFloat(v[upK])>0?`${v[sheetK]}, ${v[upK]}шт`:'');
     push('ДРУК', printLine(v,printWhich));
-    const winOn=winK&&v[winK];
-    if(winOn&&v['lam'+lamWhich+'Out']==='Глянцева'&&v['lam'+lamWhich+'In']==='Глянцева'){
-      L.push('ЛАМІНАЦІЯ: глянцева зовнішня');
+    const winOn=winK&&v[winK], lp=lamParts(v,lamWhich);
+    if(winOn&&lp.length>=2){
+      L.push(`ЛАМІНАЦІЯ: ${lp[0]}`);
       L.push('ВИСІЧКА ВІКНА');
-      L.push('ЛАМІНАЦІЯ: глянцева внутрішня');
+      for(let i=1;i<lp.length;i++) L.push(`ЛАМІНАЦІЯ: ${lp[i]}`);
     }else{
       if(winOn) L.push('ВИСІЧКА ВІКНА');
-      push('ЛАМІНАЦІЯ', lamLine(v,lamWhich));
+      lp.forEach(p=>L.push(`ЛАМІНАЦІЯ: ${p}`));
     }
     if(v['lac'+embWhich]) L.push('ВИБІРКОВИЙ ЛАК');
     push('ТИСНЕННЯ', embLine(v,embWhich));
@@ -626,6 +643,13 @@ function bind(){
       save(); update(br);
     });
     col.addEventListener('click',e=>{
+      const cmykBtn=e.target.closest('[data-cmyk]');
+      if(cmykBtn){
+        const k=cmykBtn.dataset.cmyk;
+        S[br].v[k]=!S[br].v[k];
+        save(); update(br);
+        return;
+      }
       const chipBtn=e.target.closest('[data-chip] button');
       if(chipBtn){
         const k=chipBtn.closest('[data-chip]').dataset.chip;
